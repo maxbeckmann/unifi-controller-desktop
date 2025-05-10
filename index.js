@@ -50,7 +50,9 @@ app.whenReady().then(() => {
 
   // Start the Podman container
   containerProcess = spawn('podman', [
-    'run', '--rm', '--network', 'host',
+    'run', '--rm', '-p', '127.0.0.1:8443:8443',
+    '-p', '8080:8080',
+    '-p', '1900:1900/udp',
     '-v', `${configDir}:/config:Z`,
     'lscr.io/linuxserver/unifi-controller:latest'
   ]);
