@@ -25,10 +25,29 @@ function createMainWindow() {
     },
   });
 
+  showLoadingScreen();
+}
+
+function showLoadingScreen() {
+  if (!mainWindow) return;
   mainWindow.loadURL(`data:text/html;charset=utf-8,
     <html>
       <body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
         <h2>Starting Unifi Controller...</h2>
+      </body>
+    </html>`);
+}
+
+function showErrorScreen(message) {
+  if (!mainWindow) return;
+  const escapedMessage = message.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  mainWindow.loadURL(`data:text/html;charset=utf-8,
+    <html>
+      <body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;color:red;">
+        <div>
+          <h2>Failed to start Unifi Controller</h2>
+          <pre>${escapedMessage}</pre>
+        </div>
       </body>
     </html>`);
 }
@@ -49,34 +68,48 @@ app.whenReady().then(() => {
   }
 
   // Start the Podman container
-  containerProcess = spawn('podman', [
-    'run', '--rm', '-p', '127.0.0.1:8443:8443',
-    '-p', '8080:8080',
-    '-p', '1900:1900/udp',
-    '-v', `${configDir}:/config:Z`,
-    'lscr.io/linuxserver/unifi-controller:latest'
-  ]);
+  try {
+    containerProcess = spawn('podman', [
+      'run', '--rm', 'p', '127.0.0.1:8443:8443',
+      '-p', '8080:8080',
+      '-p', '1900:1900/udp',
+      '-v', `${configDir}:/config:Z`,
+      'lscr.io/linuxserver/unifi-controller:latest'
+    ]);
 
-  containerProcess.stdout.on('data', data => {
-    const output = data.toString();
-    console.log(`Container stdout: ${output}`);
-    if (output.includes('[ls.io-init] done.')) {
-      loadControllerUI();
-    }
-  });
+    containerProcess.stdout.on('data', data => {
+      const output = data.toString();
+      console.log(`Container stdout: ${output}`);
+      if (output.includes('[ls.io-init] done.')) {
+        loadControllerUI();
+      }
+    });
 
-  containerProcess.stderr.on('data', data => {
-    console.error(`Container stderr: ${data}`);
-  });
+    let stderrBuffer = '';
+    containerProcess.stderr.on('data', data => {
+      const errorOutput = data.toString();
+      stderrBuffer += errorOutput;
+      console.error(`Container stderr: ${errorOutput}`);
+    });
 
-  containerProcess.on('error', err => {
-    console.error('Failed to start container:', err);
-    app.quit();
-  });
+    containerProcess.on('error', err => {
+      console.error('Failed to start container:', err);
+      showErrorScreen(`Startup error: ${err.message}`);
+    });
 
-  containerProcess.on('exit', (code, signal) => {
-    console.log(`Container exited with code ${code}, signal ${signal}`);
-  });
+    containerProcess.on('exit', (code, signal) => {
+      if (code !== 0) {
+        console.error(`Container exited early with code ${code}, signal ${signal}`);
+        showErrorScreen(`Exit code: ${code}, signal: ${signal}\n${stderrBuffer}`);
+      } else {
+        console.log(`Container exited normally with code ${code}`);
+      }
+    });
+
+  } catch (err) {
+    console.error('Caught error while spawning container:', err);
+    showErrorScreen(`Caught exception: ${err.message}`);
+  }
 });
 
 app.on('window-all-closed', () => {
