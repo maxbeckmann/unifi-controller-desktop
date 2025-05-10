@@ -69,7 +69,7 @@ You can safely use the controller's built-in **backup and restore** functionalit
 ## ⚠️ Known Issues & Limitations
 
 - 🧊 **Deprecated container:** The `lscr.io/linuxserver/unifi-controller` image is no longer actively maintained. 
-- 🔐 **TLS bypassed:** Electron is configured to ignore certificate errors, so the connection to the UI is not verified or encrypted.
+- 🔐 **TLS bypassed:** Electron is configured to ignore certificate errors, so the connection to the UI is not verified.
 - 🧾 **Container permissions:** The controller writes configuration files as a user ID that may not exist on the host system. As a result, files under `~/.config/unifi-controller` may appear owned by a **dangling UID/GID** (i.e., an unknown user from the host's perspective).
 
 And yes, this is mostly vibe-coded and I didn't even start to explore security considerations. Needless to say: This is not intended for production use. 
