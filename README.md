@@ -77,7 +77,7 @@ These observations are based on initial testing and may vary depending on networ
 ## ⚠️ Known Issues & Limitations
 
 - 🧊 **Deprecated container:** The `lscr.io/linuxserver/unifi-controller` image is no longer actively maintained. 
-- 🌐 **Host network exposure:** The controller UI is bound to `localhost:8443` but technically exposed to the full host network via `--network host`.
+- 🌐 **Host network exposure:** The controller UI is exposed to the full host network via `--network host`.
 - 🔐 **TLS bypassed:** Electron is configured to ignore certificate errors, so the connection to the UI is not verified or encrypted.
 - 🧾 **Container permissions:** The controller writes configuration files as a user ID that may not exist on the host system. As a result, files under `~/.config/unifi-controller` may appear owned by a **dangling UID/GID** (i.e., an unknown user from the host's perspective).
 
