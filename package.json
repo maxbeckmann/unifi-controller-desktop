@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "electron .",
+    "build": "electron-packager . unifi-controller-desktop --platform linux --arch x64 --out dist/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -11,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "electron": "^36.2.0"
+    "electron": "^36.2.0",
+    "@electron/packager": "*"
   }
 }
